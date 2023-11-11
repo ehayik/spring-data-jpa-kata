@@ -1,3 +1,37 @@
 spring:
   main:
     web-application-type: none
+
+decorator:
+  datasource:
+    #SQL statement logging configuration
+    datasource-proxy:
+      logging: slf4j
+      count-query: false
+      json-format: false
+      multiline: true
+      query:
+        enable-logging: true
+        log-level: info
+        logger-name: "net.ttddyy.dsproxy.listener.logging.SLF4JQueryLoggingListener"
+      slow-query:
+        enable-logging: true
+        log-level: info
+        logger-name: "net.ttddyy.dsproxy.listener.logging.SLF4JSlowQueryListener"
+        threshold: 300
+    # reactive connection pooling
+    flexy-pool:
+      acquiring-strategy:
+        increment-pool:
+          max-overflow-pool-size: 10
+          timeout-millis: 500
+        retry:
+          attempts: 2
+      metrics:
+        reporter:
+          jmx:
+            enabled: false
+
+logging:
+  level:
+    root: info
