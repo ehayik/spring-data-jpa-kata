@@ -1,10 +1,17 @@
 services:
   mysql:
     image: 'mysql:latest'
+    restart: always
     environment:
-      - 'MYSQL_DATABASE=mydatabase'
-      - 'MYSQL_PASSWORD=secret'
-      - 'MYSQL_ROOT_PASSWORD=verysecret'
-      - 'MYSQL_USER=myuser'
+      - MYSQL_DATABASE=employees
+      - MYSQL_USER=admin
+      - MYSQL_PASSWORD=admin123
+      - MYSQL_ROOT_PASSWORD=Manager1
     ports:
-      - '3306'
+      - '3306:3306'
+    volumes:
+      - 'mysql_data:/var/lib/mysql'
+      - './scripts/db:/docker-entrypoint-initdb.d'
+volumes:
+  mysql_data:
+    driver: local
