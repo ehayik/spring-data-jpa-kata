@@ -1,32 +1,30 @@
 package org.github.ehayik.playground.entities;
 
 import jakarta.persistence.*;
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import org.hibernate.annotations.*;
 import org.hibernate.annotations.Cache;
+import org.hibernate.annotations.NaturalId;
+import org.hibernate.annotations.NaturalIdCache;
 
-import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
+import static jakarta.persistence.CascadeType.ALL;
 import static org.hibernate.annotations.CacheConcurrencyStrategy.READ_WRITE;
 
 /**
- * Hands on good practices to handle <code>@ManyToMany</code> relationships.
+ * Hands on the best way to many-to-many association with extra columns.
  *
  * <ul>
- *     <li>The entity has a unique business key which is marked with the Hibernate-specific <code>@NaturalId</code> annotation. When that’s the case, the unique business key is the best candidate for equality checks</li>
- *     <li>The REMOVE entity state transition doesn't make any sense for a <code>@ManyToMany</code> JPA association since it could trigger a chain deletion that would ultimately wipe both sides of the association.</li>
- *     <li>When using the <code>@ManyToMany</code> annotation, always use a <code>java.util.Set</code> and avoid the <code>java.util.List</code>.</li>
- *     <li>Add/remove utility methods are mandatory if you use bidirectional associations so that you can make sure that both sides of the association are in sync.</li>
+ *     <li>We need is to map the composite Primary Key which belongs to the intermediary join table.</li>
+ *     <li>We need to map the join table using a dedicated entity</li>
+ *     <li>When mapping the intermediary join table, it’s better to map only one side as a bidirectional @OneToMany association since otherwise, a second SELECT statement will be issued while removing the intermediary join entity.</li>
  * </ul>
  *
- * @see <a href="https://vladmihalcea.com/the-best-way-to-use-the-manytomany-annotation-with-jpa-and-hibernate/">Best way to map the JPA and Hibernate ManyToMany relationship</a>
- * @see <a href="https://vladmihalcea.com/the-best-way-to-map-a-naturalid-business-key-with-jpa-and-hibernate/">The best way to map a @NaturalId business key with JPA and Hibernate</a>
+ * @see <a href="https://vladmihalcea.com/the-best-way-to-map-a-many-to-many-association-with-extra-columns-when-using-jpa-and-hibernate/">The best way to map a JPA and Hibernate many-to-many association with extra columns</a>
  */
 @Getter
 @Setter
@@ -46,37 +44,27 @@ public class Department {
     private String name;
 
     @ToString.Exclude
-    @ManyToMany(cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    })
-    @JoinTable(name = "dept_emp",
-            joinColumns = @JoinColumn(name = "dept_no"),
-            inverseJoinColumns = @JoinColumn(name = "emp_no")
-    )
-    private Set<Employee> employees = new HashSet<>();
+    @OneToMany(mappedBy = "department", cascade = ALL, orphanRemoval = true)
+    private List<DepartmentEmployee> employees = new LinkedList<>();
 
     public void addEmployee(Employee employee) {
-        employees.add(employee);
-        employee.getDepartments().add(this);
+        var deptEmployee = new DepartmentEmployee(this, employee);
+        employees.add(deptEmployee);
     }
 
     public void removeEmployee(Employee employee) {
-        employees.remove(employee);
-        employee.getDepartments().remove(this);
+        employees.removeIf(
+                x -> x.getDepartment().equals(this) && x.getEmployee().equals(employee));
     }
 
     @Override
     public boolean equals(Object obj) {
         if (this == obj) return true;
-        return (obj instanceof Department other) &&
-                Objects.equals(getName(), other.getName());
+        return (obj instanceof Department other) && Objects.equals(getName(), other.getName());
     }
 
     @Override
     public int hashCode() {
         return Objects.hashCode(getName());
     }
-
 }
-

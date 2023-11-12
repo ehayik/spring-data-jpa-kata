@@ -15,10 +15,12 @@ public class DepartmentService {
 
     @Transactional(readOnly = true)
     public void logDepartmentEmployees(String departmentName) {
-        var department = departmentRepository.findByNameWithEmployees(departmentName).orElseThrow();
+        var department =
+                departmentRepository.findByNameWithEmployees(departmentName).orElseThrow();
         log.info("Found Department: {}", department);
 
         log.info("Fetching {} department employees", department.getName());
-        department.getEmployees().forEach(employee -> log.info("Employee: {}", employee.getFullName()));
+        department.getEmployees()
+                .forEach(x -> log.info("Employee: {}, from {} to {}.", x.getEmployee().getFullName(), x.getFromDate(), x.getToDate()));
     }
 }

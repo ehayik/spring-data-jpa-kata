@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface DepartmentRepository extends JpaRepository<Department, String> {
 
-    @EntityGraph(attributePaths = "employees")
+    @EntityGraph(attributePaths = "employees.employee")
     @Query("FROM Department dp WHERE dp.name = :name")
     Optional<Department> findByNameWithEmployees(@Param("name") String name);
 }

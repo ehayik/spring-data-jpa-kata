@@ -6,9 +6,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Objects;
-import java.util.Set;
 
 import static jakarta.persistence.EnumType.STRING;
 
@@ -38,10 +36,6 @@ public class Employee {
 
     @Column(name = "hire_date")
     private LocalDate hireDate;
-
-    @ToString.Exclude
-    @ManyToMany(mappedBy = "employees")
-    private Set<Department> departments = new HashSet<>();
 
     public String getFullName() {
         return firstName + " " + lastName;
