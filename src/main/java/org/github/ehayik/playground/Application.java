@@ -1,13 +1,12 @@
 package org.github.ehayik.playground;
 
 import lombok.extern.slf4j.Slf4j;
+import org.github.ehayik.playground.services.DepartmentService;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.JdbcConnectionDetails;
 import org.springframework.context.annotation.Bean;
-
-import java.time.LocalDate;
 
 @Slf4j
 @SpringBootApplication
@@ -31,11 +30,7 @@ public class Application {
     }
 
     @Bean
-    CommandLineRunner commandLineRunner(EmployeeRepository employeeRepository) {
-        return args -> {
-            var afterDate = LocalDate.now().minusYears(30);
-            var count = employeeRepository.countAllByHireDateAfter(afterDate);
-            log.info("Found {} employees hired after {}", count, afterDate);
-        };
+    CommandLineRunner logDepartmentEmployeesRunner(DepartmentService departmentService) {
+        return args -> departmentService.logDepartmentEmployees("Finance");
     }
 }
